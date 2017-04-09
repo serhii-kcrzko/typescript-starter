@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+"use strict";
+
+// module dependencies
+const server = require("../dist/server");
+const debug = require("debug")("express:server");
+const http = require("http");
+
+// create http server
+const httpPort = normalizePort(process.env.PORT || 8080);
+const app = server.Server.bootstrap().app;
+app.set("port", httpPort);
+const httpServer = http.createServer(app);
+
+// listen on provided ports
+httpServer.listen(httpPort);
+
+// add error handler
+httpServer.on("error", onError);
+
+// start listening on port
+httpServer.on("listening", onListening);
+
+/**
+ * Normalize port into a number, string or false.
+ * @param {*} value - some value to be normalized
+ * @returns {String|NUmber|Boolean} - either named pipe or port number or false.
+ */
+function normalizePort(value) {
+  const port = parseInt(value, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return value;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ * @param {*} error  - some error to be processed
+ */
+function onError(error) {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+
+  const bind = typeof bind === 'string'
+    ? `Pipe ${port}`
+    : `Port #${port}`;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case "EACCES":
+      console.error(`${bind} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(`${bind} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+function onListening() {
+  const address = httpServer.address();
+  const bind = typeof address === "string"
+    ? `pipe ${address}`
+    : `port #${address.port}`;
+  console.log(`Server is listening on ${bind}.`)
+}
